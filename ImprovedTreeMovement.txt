@@ -1,0 +1,38 @@
+{$CLEO .csa}
+{$NOSOURCE}
+{$Include includes/eWeathersID.h}
+nop
+
+define function GetWeatherType(): int
+
+while true
+    wait 0 ms
+    int iWeatherType = GetWeatherType()
+    
+    switch iWeatherType
+        case WEATHER_CLOUDY_COUNTRYSIDE, WEATHER_CLOUDY_SF, WEATHER_CLOUDY_LS, WEATHER_CLOUDY_LV
+            write_mem_addr 0x3ECF50 value 0.15 size 4 add_ib 1 protect 1
+            
+        case WEATHER_RAINY_COUNTRYSIDE, WEATHER_RAINY_SF, WEATHER_SANDSTORM
+            write_mem_addr 0x3ECF50 value 0.08 size 4 add_ib 1 protect 1
+        default
+            write_mem_addr 0x3ECF50 value 0.8 size 4 add_ib 1 protect 1
+    end
+end
+    
+end_thread
+
+function GetWeatherType(): int
+    int addr, iType
+    0DD0: addr = get_label_addr @_ZN8CWeather17ForcedWeatherTypeE
+    addr = get_func_addr_by_cstr_name addr
+    
+    0DD8: iType = read_mem_addr addr size 1 add_ib 0
+    
+    cleo_return 1 iType
+end
+
+:_ZN8CWeather17ForcedWeatherTypeE
+hex
+    "_ZN8CWeather17ForcedWeatherTypeE" 00
+end
